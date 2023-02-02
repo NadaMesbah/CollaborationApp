@@ -1,15 +1,45 @@
-﻿var connection = new signalR.HubConnectionBuilder().withUrl("/hubs/texteditor").build();
-connection.start().then(function () {
-    document.getElementById("updateButton").addEventListener("click", function (event) {
-        var content = document.getElementById("textEditor").value;
-        connection.invoke("UpdateDocument", content).catch(function (err) {
-            return console.error(err.toString());
+﻿var quill = new Quill("#documentEditor", {
+    modules: {
+        toolbar: [
+            ["bold", "italic", "underline", "strike"],
+            [{ header: 1 }, { header: 2 }],
+            [{ list: "ordered" }, { list: "bullet" }],
+            [{ script: "sub" }, { script: "super" }],
+            [{ indent: "-1" }, { indent: "+1" }],
+            [{ direction: "rtl" }],
+            [{ size: ["small", false, "large", "huge"] }],
+            [{ header: [1, 2, 3, 4, 5, 6, false] }],
+            [{ color: [] }, { background: [] }],
+            [{ font: [] }],
+            [{ align: [] }],
+            ["clean"]
+        ]
+    },
+    theme: "snow"
+});
+
+var connection = new signalR.HubConnectionBuilder()
+    .withUrl("/hubs/texteditor")
+    .build();
+
+connection
+    .start()
+    .then(function () {
+        // Subscribe to updates from the server
+        connection.on("updateDocument", function (content) {
+            // Update the document content with the received update
+            quill.setContents(content);
         });
-        event.preventDefault();
-    });
-    connection.on("ReceiveUpdate", function (content) {
-        document.getElementById("textEditor").value = content;
-    });
-}).catch(function (err) {
-    return console.error(err.toString());
+        // Send updates to the server when the document content changes
+        quill.on("text-change", function () {
+            connection.invoke("updateDocument", quill.getContents());
+            //// Extract the content of the Quill editor
+            //var content = quill.root.innerHTML;
+
+            //// Insert the content into the output element
+            //document.getElementById("output").innerHTML = content;
+        });
+    })
+    .catch(function (error) {
+        console.error("Error connecting to SignalR hub:", error);
 });
