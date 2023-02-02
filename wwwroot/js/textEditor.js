@@ -1,4 +1,4 @@
-﻿var connection = new signalR.HubConnectionBuilder().withUrl("/hub/texteditor").build();
+﻿var connection = new signalR.HubConnectionBuilder().withUrl("/hubs/texteditor").build();
 connection.start().then(function () {
     document.getElementById("updateButton").addEventListener("click", function (event) {
         var content = document.getElementById("textEditor").value;
