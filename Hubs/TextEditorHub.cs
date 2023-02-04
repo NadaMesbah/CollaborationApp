@@ -6,7 +6,8 @@ namespace CollaborationApp.Hubs
     {
         public async Task UpdateDocument(string content)
         {
-            await Clients.All.SendAsync("ReceiveUpdate", content);
+            Console.WriteLine(content);
+            await Clients.AllExcept(Context.ConnectionId).SendAsync("updateDocument", content);
         }
     }
 }

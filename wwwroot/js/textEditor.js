@@ -28,11 +28,14 @@ connection
         // Subscribe to updates from the server
         connection.on("updateDocument", function (content) {
             // Update the document content with the received update
-            quill.setContents(content);
+            console.log(content);
+            quill.updateContents(JSON.parse(content));
         });
         // Send updates to the server when the document content changes
-        quill.on("text-change", function () {
-            connection.invoke("updateDocument", quill.getContents());
+        quill.on("text-change", function (delta, oldDelta, source) {
+            if (source == "user") {
+                connection.invoke("updateDocument", JSON.stringify(delta));
+            }
             //// Extract the content of the Quill editor
             //var content = quill.root.innerHTML;
 
